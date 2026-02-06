@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026 Landlord vs. Tenant State Rankings — 50-State Index</title>
+  <meta name="description" content="Open dataset ranking all 50 US states on landlord-friendly vs. tenant-friendly laws across 10 legal and financial factors. Free CSV download under CC BY 4.0.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a1a2e;
+      --paper: #f8f7f4;
+      --accent: #c0392b;
+      --accent-light: #e74c3c;
+      --muted: #6b7280;
+      --border: #d6d3cd;
+      --card-bg: #ffffff;
+      --tag-bg: #edecea;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    header {
+      padding: 56px 0 40px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    header p.kicker {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      line-height: 1.15;
+      font-weight: 400;
+      margin-bottom: 16px;
+    }
+
+    header .subtitle {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 600px;
+    }
+
+    /* Meta bar */
+    .meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .meta-bar span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meta-bar .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+    }
+
+    /* Sections */
+    section {
+      padding: 36px 0;
+    }
+
+    section + section {
+      border-top: 1px solid var(--border);
+    }
+
+    h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      margin-bottom: 16px;
+    }
+
+    p + p { margin-top: 12px; }
+
+    /* Accordion factors */
+    .factors-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .factor-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .factor-item.open {
+      border-color: var(--accent);
+    }
+
+    .factor-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--ink);
+      transition: background 0.15s;
+    }
+
+    .factor-header:hover {
+      background: var(--tag-bg);
+    }
+
+    .factor-header .num {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--tag-bg);
+      border-radius: 4px;
+      padding: 2px 7px;
+      flex-shrink: 0;
+    }
+
+    .factor-header .label {
+      flex: 1;
+    }
+
+    .factor-header .category {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+
+    .factor-header .chevron {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      transition: transform 0.25s ease;
+      color: var(--muted);
+    }
+
+    .factor-item.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .factor-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+    }
+
+    .factor-body-inner {
+      padding: 0 16px 18px 16px;
+    }
+
+    /* Score scale */
+    .score-scale {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .score-cell {
+      background: var(--tag-bg);
+      border-radius: 5px;
+      padding: 8px 6px;
+      text-align: center;
+      font-size: 0.76rem;
+      line-height: 1.4;
+      color: var(--ink);
+    }
+
+    .score-cell .score-num {
+      display: block;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .score-cell:first-child {
+      background: #dbeafe;
+    }
+
+    .score-cell:nth-child(2) {
+      background: #e8e4f0;
+    }
+
+    .score-cell:nth-child(3) {
+      background: var(--tag-bg);
+    }
+
+    .score-cell:nth-child(4) {
+      background: #fde8d0;
+    }
+
+    .score-cell:last-child {
+      background: #fcd5d5;
+    }
+
+    .factor-desc {
+      font-size: 0.84rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .factor-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+      font-style: italic;
+    }
+
+    /* Weight badges */
+    .weight-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+      margin-bottom: 20px;
+    }
+
+    .weight-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+    }
+
+    .weight-badge strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* CTA cards */
+    .cta-stack {
+      display: grid;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .cta-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 22px;
+      text-decoration: none;
+      color: var(--ink);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .cta-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 2px 12px rgba(192, 57, 43, 0.08);
+    }
+
+    .cta-card .label {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .cta-card .desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .cta-card .arrow {
+      font-size: 1.3rem;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-left: 16px;
+      transition: transform 0.2s;
+    }
+
+    .cta-card:hover .arrow {
+      transform: translateX(4px);
+    }
+
+    .cta-card.primary {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: #fff;
+    }
+
+    .cta-card.primary .desc {
+      color: #a0aec0;
+    }
+
+    .cta-card.primary .arrow {
+      color: var(--accent-light);
+    }
+
+    /* Tags */
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .tag {
+      background: var(--tag-bg);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    /* License */
+    .license-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      margin-top: 10px;
+    }
+
+    .license-badge .icon {
+      font-size: 1.1rem;
+    }
+
+    /* Footer */
+    footer {
+      padding: 32px 0;
+      border-top: 2px solid var(--ink);
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      header { padding: 36px 0 28px; }
+      .score-scale { grid-template-columns: repeat(5, 1fr); font-size: 0.68rem; }
+      .score-cell { padding: 6px 3px; }
+      .score-cell .score-num { font-size: 0.82rem; }
+      .cta-card { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .cta-card .arrow { align-self: flex-end; margin-left: 0; }
+      .factor-header .category { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <p class="kicker">Open Dataset — 2026 Edition</p>
+    <h1>Landlord vs. Tenant<br>State Rankings Index</h1>
+    <p class="subtitle">A scored index ranking all 50 US states on how landlord-friendly or tenant-friendly their laws are, across 10 legal and financial factors on a 1–5 scale.</p>
+  </header>
+
+  <div class="meta-bar">
+    <span><span class="dot"></span> 50 states</span>
+    <span><span class="dot"></span> 10 factors</span>
+    <span><span class="dot"></span> 1–5 scoring scale</span>
+    <span><span class="dot"></span> Updated quarterly</span>
+  </div>
+
+  <section>
+    <h2>Explore the Full Analysis</h2>
+    <div class="cta-stack">
+      <a class="cta-card primary" href="https://soldfast.com/blog/is-your-state-more-tenant-friendly-or-landlord-friendly/">
+        <div>
+          <div class="label">Complete State-by-State Rankings</div>
+          <div class="desc">Interactive analysis with maps, verdicts, and expert commentary for all 50 states</div>
+        </div>
+        <span class="arrow">→</span>
+      </a>
+      <a class="cta-card" href="https://soldfast.com/blog/our-methodology-for-the-2026-landlord-vs-tenant-state-rankings/">
+        <div>
+          <div class="label">Full Methodology</div>
+          <div class="desc">How we sourced, scored, and weighted each factor</div>
+        </div>
+        <span class="arrow">→</span>
+      </a>
+      <a class="cta-card" href="https://github.com/ryancdossey1/landlord-vs-tenant-index-2026/blob/main/Landlord%20Vs.%20Tenant%20Index.csv">
+        <div>
+          <div class="label">Download the CSV</div>
+          <div class="desc">Raw data — 50 states × 12 columns (CC BY 4.0)</div>
+        </div>
+        <span class="arrow">↓</span>
+      </a>
+    </div>
+  </section>
+
+  <section>
+    <h2>Factors Scored</h2>
+    <p>Each state is evaluated across 10 dimensions of landlord-tenant law, scored from 1 (most tenant-friendly) to 5 (most landlord-friendly). Click any factor to see the scoring criteria.</p>
+
+    <div class="weight-legend">
+      <div class="weight-badge"><strong>Legal</strong> 35%</div>
+      <div class="weight-badge"><strong>Evictions</strong> 35%</div>
+      <div class="weight-badge"><strong>Financial</strong> 20%</div>
+      <div class="weight-badge"><strong>Misc.</strong> 10%</div>
+    </div>
+
+    <div class="factors-list">
+
+      <!-- 01 -->
+      <div class="factor-item">
+        <button class="factor-header" onclick="toggle(this)">
+          <span class="num">01</span>
+          <span class="label">Formal Landlord/Tenant Act</span>
+          <span class="category">Legal</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="factor-body">
+          <div class="factor-body-inner">
+            <div class="score-scale">
+              <div class="score-cell"><span class="score-num">1</span>Highly regulated act, tenant bill of rights</div>
+              <div class="score-cell"><span class="score-num">2</span>Extensive act, local bill of rights possible</div>
+              <div class="score-cell"><span class="score-num">3</span>Formal, balanced act</div>
+              <div class="score-cell"><span class="score-num">4</span>Basic protections, no formal act</div>
+              <div class="score-cell"><span class="score-num">5</span>No act, may rely on federal minimums</div>
+            </div>
+            <p class="factor-desc">Many states feature a formal tenant/landlord act covering standard protections, penalties, and enforcement. However, how far these protections go still varies considerably. State governments can still provide core protections without a specific act — some states have strong protections without one, while others with formal legislation have more limited protections.</p>
+            <p class="factor-note">Note: Strength and extent of protections are given priority over whether a formal act exists.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 02 -->
+      <div class="factor-item">
+        <button class="factor-header" onclick="toggle(this)">
+          <span class="num">02</span>
+          <span class="label">Rent Control / Stabilization Programs</span>
+          <span class="category">Legal</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="factor-body">
+          <div class="factor-body-inner">
+            <div class="score-scale">
+              <div class="score-cell"><span class="score-num">1</span>Statewide caps, may also have local caps</div>
+              <div class="score-cell"><span class="score-num">2</span>Local caps, some state programs</div>
+              <div class="score-cell"><span class="score-num">3</span>No state cap or preemption, local programs considered</div>
+              <div class="score-cell"><span class="score-num">4</span>State preemption, local control grandfathered in</div>
+              <div class="score-cell"><span class="score-num">5</span>State preemption, pushing for full prohibition</div>
+            </div>
+            <p class="factor-desc">Most states don't have rent control laws and in fact preempt local governments from passing them. However, county and city-level programs cover the vast majority of tenants under rent control, especially in large cities like New York, Chicago, San Francisco, and Seattle.</p>
+            <p class="factor-note">Note: City-level programs in large, influential cities can represent large percentages of a state's total renter population.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 03 -->
+      <div class="factor-item">
+        <button class="factor-header" onclick="toggle(this)">
+          <span class="num">03</span>
+          <span class="label">Regulatory Burdens</span>
+          <span class="category">Legal</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="factor-body">
+          <div class="factor-body-inner">
+            <div class="score-scale">
+              <div class="score-cell"><span class="score-num">1</span>Very strong state regulations w/ mandatory costs</div>
+              <div class="score-cell"><span class="score-num">2</span>Strong regulations w/ enforcement tools</div>
+              <div class="score-cell"><span class="score-num">3</span>Supplemental regulations, periodic local</div>
+              <div class="score-cell"><span class="score-num">4</span>Mostly local, complaint-based enforcement</div>
+              <div class="score-cell"><span class="score-num">5</span>Minimal regulations, state restrictions on new ones</div>
+            </div>
+            <p class="factor-desc">Common regulatory requirements are mandated at the state level, but many come from county or city governments. Since populations are concentrated in urban areas, local-level ordinances still have a major impact. Most burdens fall on landlords (documentation, building codes), while tenant burdens may include passed costs, screening rules, and appeal restrictions.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 04 -->
+      <div class="factor-item">
+        <button class="factor-header" onclick="toggle(this)">
+          <span class="num">04</span>
+          <span class="label">Potential Eviction Costs</span>
+          <span class="category">Evictions</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="factor-body">
+          <div class="factor-body-inner">
+            <div class="score-scale">
+              <div class="score-cell"><span class="score-num">1</span>&lt;$300</div>
+              <div class="score-cell"><span class="score-num">2</span>$300 – $500</div>
+              <div class="score-cell"><span class="score-num">3</span>$500 – $700</div>
+              <div class="score-cell"><span class="score-num">4</span>$700 – $1,000</div>
+              <div class="score-cell"><span class="score-num">5</span>$1,000+</div>
+            </div>
+            <p class="factor-desc">Includes filing paperwork, lawyers' fees, and soft costs like cleanup. Lost rent is the costliest unknown, most impactful in states with longer timelines. An uncontested eviction in landlord-friendly states may cost a few hundred dollars, while a contested eviction in tenant-friendly states could exceed $10,000.</p>
+            <p class="factor-note">Note: These baselines assume filing/sheriff costs for a simple, uncontested eviction. Judicial backlogs, lawyer fees, and average rent prices all impact final costs.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 05 -->
+      <div class="factor-item">
+        <button class="factor-header" onclick="toggle(this)">
+          <span class="num">05</span>
+          <span class="label">Eviction Rates &amp; Timelines</span>
+          <span class="category">Evictions</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="factor-body">
+          <div class="factor-body-inner">
+            <div class="score-scale">
+              <div class="score-cell"><span class="score-num">1</span>&lt;30 days</div>
+              <div class="score-cell"><span class="score-num">2</span>30 – 60 days</div>
+              <div class="score-cell"><span class="score-num">3</span>60 – 90 days</div>
+              <div class="score-cell"><span class="score-num">4</span>90 – 120 days</div>
+              <div class="score-cell"><span class="score-num">5</span>120+ days</div>
+            </div>
+            <p class="factor-desc">Long, complicated evictions mean higher court costs and months of lost rent. Regulatory burdens like dispute mediation or longer notice periods also extend the timeline. The shortest evictions average 3–6 weeks, while the most tenant-friendly states can stretch to 3 or 4 months.</p>
+            <p class="factor-note">Note: Sheriff availability and court scheduling delays mean every eviction is different. Timelines could be shorter or longer than these ranges.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 06 -->
+      <div class="factor-item">
+        <button class="factor-header" onclick="toggle(this)">
+          <span class="num">06</span>
+          <span class="label">Required Notice Periods</span>
+          <span class="category">Evictions</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="factor-body">
+          <div class="factor-body-inner">
+            <div class="score-scale">
+              <div class="score-cell"><span class="score-num">1</span>21+ days</div>
+              <div class="score-cell"><span class="score-num">2</span>7 – 14 days</div>
+              <div class="score-cell"><span class="score-num">3</span>5 – 7 days</div>
+              <div class="score-cell"><span class="score-num">4</span>3 – 5 days</div>
+              <div class="score-cell"><span class="score-num">5</span>&lt;3 days</div>
+            </div>
+            <p class="factor-desc">Landlords must notify tenants of payment or lease violations before starting eviction proceedings. Nearly all states require longer notice for lease violations (2–4 weeks) than for nonpayment (as few as 3–5 days). A couple of states don't require any notice, allowing eviction proceedings to start the next day.</p>
+            <p class="factor-note">Note: Eviction notice periods are given priority over lease violation periods. Notices to terminate tenancies are not the same as notices to cure/pay or quit.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 07 -->
+      <div class="factor-item">
+        <button class="factor-header" onclick="toggle(this)">
+          <span class="num">07</span>
+          <span class="label">Effective Property Tax Rate</span>
+          <span class="category">Financial</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="factor-body">
+          <div class="factor-body-inner">
+            <div class="score-scale">
+              <div class="score-cell"><span class="score-num">1</span>&gt;2%</div>
+              <div class="score-cell"><span class="score-num">2</span>1.5 – 2%</div>
+              <div class="score-cell"><span class="score-num">3</span>1 – 1.5%</div>
+              <div class="score-cell"><span class="score-num">4</span>0.7 – 1%</div>
+              <div class="score-cell"><span class="score-num">5</span>&lt;0.7%</div>
+            </div>
+            <p class="factor-desc">We use effective property tax rates because there are significant differences between rural and urban counties, and many counties only tax a percentage of property value. This helps illustrate how property value vs. the actual rate affects the total tax burden landlords face.</p>
+            <p class="factor-note">Note: Most rental units are in urban areas with higher average rates. States with no property tax are evaluated by other tax burdens like income tax.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 08 -->
+      <div class="factor-item">
+        <button class="factor-header" onclick="toggle(this)">
+          <span class="num">08</span>
+          <span class="label">Adverse Possession Requirements</span>
+          <span class="category">Misc.</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="factor-body">
+          <div class="factor-body-inner">
+            <div class="score-scale">
+              <div class="score-cell"><span class="score-num">1</span>≤7 yrs w/ exceptions, strong squatter rights</div>
+              <div class="score-cell"><span class="score-num">2</span>7–10 yrs w/ exceptions, basic rights</div>
+              <div class="score-cell"><span class="score-num">3</span>10–15 yrs, minimal squatter rights</div>
+              <div class="score-cell"><span class="score-num">4</span>≤20 yrs, shorter squatter removal</div>
+              <div class="score-cell"><span class="score-num">5</span>≥20 yrs, no exceptions, expedited removal</div>
+            </div>
+            <p class="factor-desc">The required possession period varies widely — from as few as 5 years with color of title to as many as 60 years on restricted land plots. While the typical trespasser scenario is well known, these laws also protect tenants and reestablish property lines in legitimate situations.</p>
+            <p class="factor-note">Note: Some states offer no exceptions, while others feature steep reductions (50%+) in possession requirements when the occupier has color of title or pays property taxes.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 09 -->
+      <div class="factor-item">
+        <button class="factor-header" onclick="toggle(this)">
+          <span class="num">09</span>
+          <span class="label">Security Deposit Rules</span>
+          <span class="category">Financial</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="factor-body">
+          <div class="factor-body-inner">
+            <div class="score-scale">
+              <div class="score-cell"><span class="score-num">1</span>Capped 1 mo., strict 14-day return, interest rules</div>
+              <div class="score-cell"><span class="score-num">2</span>Capped 1 mo., shorter return, stronger holding</div>
+              <div class="score-cell"><span class="score-num">3</span>Capped 1–2 mo., some holding rules</div>
+              <div class="score-cell"><span class="score-num">4</span>No cap or 2 mo., 30–45 day return</div>
+              <div class="score-cell"><span class="score-num">5</span>No cap or 2 mo., 45–60 day return</div>
+            </div>
+            <p class="factor-desc">Covers both how much landlords can hold and return windows. A maximum of 1–2 months' rent is common, though many states don't enforce a formal cap — instead, "unreasonable" deposits can be contested. Tenant-friendly states may require deposits be kept in interest-bearing accounts.</p>
+            <p class="factor-note">Note: Deposit caps and return windows are prioritized over holding rules. Some states offer no caps but short return windows and vice versa.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10 -->
+      <div class="factor-item">
+        <button class="factor-header" onclick="toggle(this)">
+          <span class="num">10</span>
+          <span class="label">Late Fee Rules</span>
+          <span class="category">Financial</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="factor-body">
+          <div class="factor-body-inner">
+            <div class="score-scale">
+              <div class="score-cell"><span class="score-num">1</span>Fixed fees, grace period required</div>
+              <div class="score-cell"><span class="score-num">2</span>Fixed or ≤10%, may require grace</div>
+              <div class="score-cell"><span class="score-num">3</span>≤10% of rent</div>
+              <div class="score-cell"><span class="score-num">4</span>≥10% of rent</div>
+              <div class="score-cell"><span class="score-num">5</span>No cap, enforced by lease terms</div>
+            </div>
+            <p class="factor-desc">Late fees are mostly dictated by lease terms, but tenants can contest "unreasonable" fees. When states enforce a cap, it's usually by percentage of rent or specific dollar amounts. Some states only enforce caps for mobile or manufactured homes.</p>
+            <p class="factor-note">Note: States offering both dollar amounts and percentages default to whichever is higher. Fixed fees are considered more tenant-friendly because inflation lessens their impact.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>How to Cite</h2>
+    <p>This dataset is released under CC BY 4.0. You're free to use, share, and adapt it — just include attribution.</p>
+    <div class="license-badge">
+      <span class="icon">⚖</span>
+      Creative Commons Attribution 4.0 International
+    </div>
+    <p style="margin-top: 14px; font-size: 0.88rem; color: var(--muted);">
+      Suggested citation: White, Connor. "2026 Landlord vs. Tenant State Rankings." SoldFast, 2026. 
+      <a href="https://soldfast.com/blog/is-your-state-more-tenant-friendly-or-landlord-friendly/" style="color: var(--accent);">soldfast.com</a>
+    </p>
+  </section>
+
+  <section>
+    <h2>Topics</h2>
+    <div class="tags">
+      <span class="tag">landlord-tenant laws</span>
+      <span class="tag">real estate</span>
+      <span class="tag">housing data</span>
+      <span class="tag">tenant rights</span>
+      <span class="tag">rental data</span>
+      <span class="tag">open data</span>
+      <span class="tag">United States</span>
+      <span class="tag">property law</span>
+    </div>
+  </section>
+
+  <footer>
+    <p>Published by <a href="https://soldfast.com">SoldFast</a> · Data &amp; analysis by Connor White · 2026</p>
+  </footer>
+
+</div>
+
+<script>
+  function toggle(btn) {
+    const item = btn.closest('.factor-item');
+    const body = item.querySelector('.factor-body');
+    const isOpen = item.classList.contains('open');
+
+    if (isOpen) {
+      body.style.maxHeight = '0';
+      item.classList.remove('open');
+    } else {
+      body.style.maxHeight = body.scrollHeight + 'px';
+      item.classList.add('open');
+    }
+  }
+</script>
+
+</body>
+</html>
