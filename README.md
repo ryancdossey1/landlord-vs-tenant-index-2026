@@ -38,20 +38,41 @@ Scores are averaged into a composite **Overall Score** (1.0 = strongly tenant-fr
 - **[State-by-State Breakdown](https://soldfast.com/blog/is-your-state-more-tenant-friendly-or-landlord-friendly/)** — detailed analysis of all 50 states with policy context
 - **[Methodology](https://soldfast.com/blog/our-methodology-for-the-2026-landlord-vs-tenant-state-rankings/)** — scoring criteria, data sources, and research process
 
-## Dataset
+## Dataset & Citation
 
-The complete dataset is published as open data:
+The complete dataset is published as open data on two platforms:
 
-- **Kaggle:** [2026 Landlord vs. Tenant State Rankings Index](https://www.kaggle.com/datasets/ryancdossey/2026-landlord-vs-tenant-state-rankings-index)
-- **Zenodo:** [DOI: 10.5281/zenodo.18512494](https://doi.org/10.5281/zenodo.18512494)
+| Platform | DOI | Link |
+|---|---|---|
+| **Zenodo** | `10.5281/zenodo.18512494` | [doi.org/10.5281/zenodo.18512494](https://doi.org/10.5281/zenodo.18512494) |
+| **Kaggle** | `10.34740/KAGGLE/DSV/14757559` | [doi.org/10.34740/kaggle/dsv/14757559](https://doi.org/10.34740/kaggle/dsv/14757559) |
 
 Available in CSV, JSON, and XLSX formats. Licensed for reuse with attribution.
+
+### APA Citation
+
+> White, C. (2026). *2026 Landlord vs. Tenant State Rankings Index* [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.18512494
+
+### BibTeX
+
+```bibtex
+@misc{connor_white_2026,
+    title={2026 Landlord vs. Tenant State Rankings Index},
+    author={Connor White},
+    year={2026},
+    doi={10.5281/zenodo.18512494},
+    publisher={Zenodo},
+    url={https://doi.org/10.5281/zenodo.18512494}
+}
+```
 
 ## Repository Contents
 
 | File | Description |
 |---|---|
-| `interactive-map.html` | Mobile-responsive interactive choropleth map with D3.js |
+| `interactive-map.html` | Full interactive map with data table, search, and sort |
+| `exploratory_analysis.py` | Python exploratory analysis script |
+| `Landlord Vs. Tenant Index.csv` | Raw dataset in CSV format |
 | `README.md` | This file |
 
 ## Tech
