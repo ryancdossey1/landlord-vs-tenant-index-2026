@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 Landlord vs. Tenant State Rankings — Interactive Map | SoldFast</title>
+<meta name="description" content="Interactive map ranking all 50 U.S. states on landlord-friendly vs tenant-friendly laws across 10 legal and financial factors.">
+<meta property="og:title" content="2026 Landlord vs. Tenant State Rankings — Interactive Map">
+<meta property="og:description" content="Composite scoring of all 50 U.S. states across 10 landlord-tenant factors on a 1-5 scale.">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://ryancdossey1.github.io/landlord-vs-tenant-index-2026/">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --navy: #033459;
+    --soldfast-blue: #0391D8;
+    --light-blue: #6CD5FF;
+    --pale-blue: #B8E8FF;
+    --ice: #E3F5FF;
+    --orange: #F4690B;
+    --bg: #F0F6FA;
+    --card-bg: #FFFFFF;
+    --text: #033459;
+    --text-light: #4A6A82;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  header {
+    background: var(--navy);
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .header-left h1 {
+    font-weight: 700;
+    font-size: 26px;
+    color: #FFFFFF;
+    letter-spacing: -0.5px;
+  }
+
+  .header-left p {
+    color: var(--light-blue);
+    font-size: 14px;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  .header-right {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .header-right a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.1);
+    transition: background 0.2s;
+  }
+
+  .header-right a:hover { background: rgba(255,255,255,0.2); }
+
+  .header-right a.cta {
+    background: var(--orange);
+  }
+
+  .header-right a.cta:hover { background: #e05500; }
+
+  .map-container {
+    max-width: 1200px;
+    margin: 32px auto;
+    padding: 0 24px;
+  }
+
+  .map-wrapper {
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 2px 20px rgba(3,52,89,0.08);
+    padding: 32px;
+    border: 3px solid var(--navy);
+  }
+
+  #map-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .state-path {
+    stroke: #fff;
+    stroke-width: 1.2;
+    cursor: pointer;
+    transition: stroke-width 0.15s, filter 0.15s;
+  }
+
+  .state-path:hover {
+    stroke-width: 2.5;
+    stroke: var(--navy);
+    filter: brightness(0.88);
+  }
+
+  .state-path.active {
+    stroke-width: 3;
+    stroke: var(--orange);
+  }
+
+  .legend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .legend-bar {
+    width: 300px;
+    height: 16px;
+    border-radius: 8px;
+    background: linear-gradient(to right, var(--navy), var(--soldfast-blue), var(--light-blue), var(--pale-blue), var(--ice));
+    border: 1px solid rgba(3,52,89,0.15);
+  }
+
+  .legend-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Desktop tooltip */
+  .tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: var(--navy);
+    color: #fff;
+    padding: 18px 22px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+    box-shadow: 0 8px 32px rgba(3,52,89,0.35);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.15s;
+    max-width: 320px;
+  }
+
+  .tooltip.visible { opacity: 1; }
+
+  .tooltip .state-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .tooltip .verdict-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .tooltip .score-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 12px;
+  }
+
+  .tooltip .score-row:last-child { border-bottom: none; }
+  .tooltip .score-row .label { color: var(--light-blue); }
+  .tooltip .score-row .value { font-weight: 700; }
+
+  .tooltip .overall-score {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--light-blue);
+    margin-top: 8px;
+    text-align: right;
+  }
+
+  .tooltip .view-link {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--light-blue);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Mobile modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(3,52,89,0.6);
+    z-index: 2000;
+    align-items: flex-end;
+    justify-content: center;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open {
+    display: flex;
+  }
+
+  .modal-sheet {
+    background: #fff;
+    width: 100%;
+    max-width: 500px;
+    max-height: 85vh;
+    border-radius: 20px 20px 0 0;
+    overflow-y: auto;
+    padding: 0;
+    animation: slideUp 0.25s ease-out;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .modal-handle {
+    width: 40px;
+    height: 4px;
+    background: #D0DEE8;
+    border-radius: 2px;
+    margin: 12px auto;
+  }
+
+  .modal-header {
+    padding: 8px 24px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .modal-header .state-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  .modal-header .overall-score {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .modal-verdict {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 24px 16px;
+  }
+
+  .modal-factors {
+    padding: 0 24px 16px;
+  }
+
+  .modal-factor-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #EDF2F7;
+    font-size: 14px;
+  }
+
+  .modal-factor-row:last-child { border-bottom: none; }
+
+  .modal-factor-row .f-label {
+    color: var(--text-light);
+    font-weight: 500;
+  }
+
+  .modal-factor-row .f-value {
+    font-weight: 700;
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    border-radius: 8px;
+    color: #fff;
+  }
+
+  .modal-cta {
+    display: block;
+    margin: 8px 24px 24px;
+    padding: 14px;
+    background: var(--orange);
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    border-radius: 12px;
+    transition: background 0.2s;
+  }
+
+  .modal-cta:hover { background: #e05500; }
+
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #EDF2F7;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  /* Mobile state picker */
+  .mobile-picker {
+    display: none;
+    max-width: 1200px;
+    margin: 0 auto 16px;
+    padding: 0 24px;
+  }
+
+  .mobile-picker select {
+    width: 100%;
+    padding: 14px 20px;
+    border: 2px solid #D0DEE8;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--navy);
+    background: var(--card-bg);
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23033459' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    cursor: pointer;
+  }
+
+  .mobile-picker select:focus {
+    border-color: var(--soldfast-blue);
+  }
+
+  .info-panel {
+    max-width: 1200px;
+    margin: 0 auto 24px;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .info-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(3,52,89,0.06);
+    border-top: 4px solid var(--soldfast-blue);
+  }
+
+  .info-card h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-light);
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  .info-card .top-list { list-style: none; }
+
+  .info-card .top-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #EDF2F7;
+    font-size: 14px;
+  }
+
+  .info-card .top-list li:last-child { border-bottom: none; }
+  .info-card .top-list .rank { font-weight: 700; color: var(--text-light); width: 24px; }
+  .info-card .top-list .name { flex: 1; font-weight: 600; }
+
+  .info-card .top-list .name a {
+    color: var(--navy);
+    text-decoration: none;
+  }
+
+  .info-card .top-list .name a:hover {
+    color: var(--soldfast-blue);
+    text-decoration: underline;
+  }
+
+  .info-card .top-list .score { font-weight: 700; font-size: 15px; }
+
+  .search-bar {
+    max-width: 1200px;
+    margin: 0 auto 20px;
+    padding: 0 24px;
+  }
+
+  .search-bar input {
+    width: 100%;
+    padding: 14px 20px;
+    border: 2px solid #D0DEE8;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--navy);
+    background: var(--card-bg);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-bar input:focus { border-color: var(--soldfast-blue); }
+  .search-bar input::placeholder { color: #94A7B8; }
+
+  .full-table-section {
+    max-width: 1200px;
+    margin: 0 auto 48px;
+    padding: 0 24px;
+  }
+
+  .table-wrapper {
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 2px 20px rgba(3,52,89,0.08);
+    overflow: hidden;
+  }
+
+  .table-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .table-wrapper thead {
+    background: var(--navy);
+    color: #fff;
+  }
+
+  .table-wrapper th {
+    padding: 14px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .table-wrapper th:hover { background: rgba(255,255,255,0.1); }
+  .table-wrapper th .sort-arrow { margin-left: 4px; opacity: 0.5; }
+  .table-wrapper th.sorted .sort-arrow { opacity: 1; }
+
+  .table-wrapper td {
+    padding: 12px 12px;
+    border-bottom: 1px solid #EDF2F7;
+  }
+
+  .table-wrapper tbody tr {
+    transition: background 0.1s;
+    cursor: pointer;
+  }
+
+  .table-wrapper tbody tr:hover { background: #F0F7FC; }
+  .table-wrapper tbody tr.highlight { background: #DFF0FB; }
+
+  .state-link {
+    color: var(--navy);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .state-link:hover {
+    color: var(--soldfast-blue);
+    text-decoration: underline;
+  }
+
+  .score-cell {
+    font-weight: 700;
+    text-align: center;
+    border-radius: 6px;
+    min-width: 32px;
+    display: inline-block;
+    padding: 2px 8px;
+    color: #fff;
+  }
+
+  .verdict-cell {
+    font-weight: 600;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  footer {
+    background: var(--navy);
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    padding: 24px;
+    font-size: 13px;
+  }
+
+  footer a {
+    color: var(--light-blue);
+    text-decoration: none;
+  }
+
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 768px) {
+    header { padding: 20px; }
+    .header-left h1 { font-size: 20px; }
+    .map-wrapper { padding: 16px; border-width: 2px; }
+    .table-wrapper { overflow-x: auto; }
+    .header-right { display: none; }
+    .mobile-picker { display: block; }
+    .legend-bar { width: 200px; }
+    .legend-label { font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>2026 Landlord vs. Tenant State Rankings</h1>
+    <p>Composite scoring of all 50 states across 10 landlord-tenant factors</p>
+  </div>
+  <div class="header-right">
+    <a href="https://soldfast.com/blog/our-methodology-for-the-2026-landlord-vs-tenant-state-rankings/">Methodology</a>
+    <a href="https://soldfast.com/blog/is-your-state-more-tenant-friendly-or-landlord-friendly/" class="cta">Full Analysis</a>
+  </div>
+</header>
+
+<div class="mobile-picker">
+  <select id="state-dropdown">
+    <option value="">Select a state to view details...</option>
+  </select>
+</div>
+
+<div class="map-container">
+  <div class="map-wrapper">
+    <svg id="map-svg" viewBox="0 0 960 600"></svg>
+    <div class="legend">
+      <span class="legend-label">1 — Tenant Friendly</span>
+      <div class="legend-bar"></div>
+      <span class="legend-label">5 — Landlord Friendly</span>
+    </div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<!-- Mobile bottom sheet modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-sheet" id="modal-sheet">
+    <div class="modal-handle"></div>
+    <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+    <div class="modal-header">
+      <div class="state-name" id="modal-state-name"></div>
+      <div class="overall-score" id="modal-overall-score"></div>
+    </div>
+    <div class="modal-verdict" id="modal-verdict"></div>
+    <div class="modal-factors" id="modal-factors"></div>
+    <a class="modal-cta" id="modal-cta" href="#" target="_blank">Read Full State Analysis →</a>
+  </div>
+</div>
+
+<div class="info-panel">
+  <div class="info-card">
+    <h3>Most Tenant-Friendly</h3>
+    <ul class="top-list" id="top-tenant-list"></ul>
+  </div>
+  <div class="info-card">
+    <h3>Most Landlord-Friendly</h3>
+    <ul class="top-list" id="top-landlord-list"></ul>
+  </div>
+  <div class="info-card">
+    <h3>Dataset Overview</h3>
+    <ul class="top-list" id="stats-list"></ul>
+  </div>
+</div>
+
+<div class="search-bar">
+  <input type="text" id="state-search" placeholder="Search for a state...">
+</div>
+
+<div class="full-table-section">
+  <div class="table-wrapper">
+    <table id="data-table">
+      <thead>
+        <tr>
+          <th data-col="rank">Rank <span class="sort-arrow">▼</span></th>
+          <th data-col="State">State <span class="sort-arrow">▼</span></th>
+          <th data-col="Overall_Score">Score <span class="sort-arrow">▼</span></th>
+          <th data-col="Verdict">Verdict <span class="sort-arrow">▼</span></th>
+          <th data-col="Formal_Landlord_Tenant_Act">LT Act <span class="sort-arrow">▼</span></th>
+          <th data-col="Rent_Control_Programs">Rent Ctrl <span class="sort-arrow">▼</span></th>
+          <th data-col="Regulatory_Burdens">Reg Burden <span class="sort-arrow">▼</span></th>
+          <th data-col="Potential_Eviction_Costs">Evic Cost <span class="sort-arrow">▼</span></th>
+          <th data-col="Avg_Eviction_Rates_Timelines">Evic Time <span class="sort-arrow">▼</span></th>
+          <th data-col="Required_Notice_Periods">Notice <span class="sort-arrow">▼</span></th>
+          <th data-col="Effective_Property_Tax_Rate">Prop Tax <span class="sort-arrow">▼</span></th>
+          <th data-col="Adverse_Possession_Requirements">Adv Poss <span class="sort-arrow">▼</span></th>
+          <th data-col="Security_Deposit_Rules">Sec Dep <span class="sort-arrow">▼</span></th>
+          <th data-col="Late_Fee_Rules">Late Fee <span class="sort-arrow">▼</span></th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 <a href="https://soldfast.com">SoldFast</a> · Data: Connor White · 
+    <a href="https://soldfast.com/blog/is-your-state-more-tenant-friendly-or-landlord-friendly/">Full Analysis</a> · 
+    <a href="https://soldfast.com/blog/our-methodology-for-the-2026-landlord-vs-tenant-state-rankings/">Methodology</a> · 
+    <a href="https://doi.org/10.5281/zenodo.18512494">DOI: 10.5281/zenodo.18512494</a>
+  </p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+const BLOG_BASE = "https://soldfast.com/blog/is-your-state-more-tenant-friendly-or-landlord-friendly/#";
+
+function stateAnchor(name) { return name.replace(/\s+/g, ''); }
+function blogLink(name) { return BLOG_BASE + stateAnchor(name); }
+
+// Touch detection
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+const DATA = [
+{"State":"Alabama","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":3,"Overall_Score":4.0,"Verdict":"Landlord-Friendly"},
+{"State":"Alaska","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":3,"Security_Deposit_Rules":4,"Late_Fee_Rules":3,"Overall_Score":3.8,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Arizona","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":4,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":5,"Overall_Score":4.2,"Verdict":"Landlord-Friendly"},
+{"State":"Arkansas","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":5,"Avg_Eviction_Rates_Timelines":5,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":3,"Security_Deposit_Rules":4,"Late_Fee_Rules":3,"Overall_Score":4.1,"Verdict":"Landlord-Friendly"},
+{"State":"California","Formal_Landlord_Tenant_Act":1,"Rent_Control_Programs":1,"Regulatory_Burdens":2,"Potential_Eviction_Costs":2,"Avg_Eviction_Rates_Timelines":2,"Required_Notice_Periods":2,"Effective_Property_Tax_Rate":3,"Adverse_Possession_Requirements":2,"Security_Deposit_Rules":2,"Late_Fee_Rules":2,"Overall_Score":1.9,"Verdict":"Strongly Tenant-Friendly"},
+{"State":"Colorado","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":4,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":3,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":3,"Overall_Score":3.5,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Connecticut","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":3,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":2,"Overall_Score":3.5,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Delaware","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":3,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":3,"Overall_Score":4.0,"Verdict":"Landlord-Friendly"},
+{"State":"Florida","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":4,"Overall_Score":4.3,"Verdict":"Strongly Landlord-Friendly"},
+{"State":"Georgia","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":4,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":4,"Overall_Score":4.3,"Verdict":"Strongly Landlord-Friendly"},
+{"State":"Hawaii","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":4,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":2,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":3,"Overall_Score":3.5,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Idaho","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":4,"Overall_Score":4.1,"Verdict":"Landlord-Friendly"},
+{"State":"Illinois","Formal_Landlord_Tenant_Act":2,"Rent_Control_Programs":5,"Regulatory_Burdens":3,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":3,"Effective_Property_Tax_Rate":1,"Adverse_Possession_Requirements":3,"Security_Deposit_Rules":3,"Late_Fee_Rules":3,"Overall_Score":2.8,"Verdict":"Somewhat Tenant-Friendly"},
+{"State":"Indiana","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":4,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":4,"Overall_Score":3.8,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Iowa","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":3,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":2,"Adverse_Possession_Requirements":3,"Security_Deposit_Rules":3,"Late_Fee_Rules":2,"Overall_Score":3.3,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Kansas","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":3,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":5,"Overall_Score":4.3,"Verdict":"Strongly Landlord-Friendly"},
+{"State":"Kentucky","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":5,"Overall_Score":4.2,"Verdict":"Landlord-Friendly"},
+{"State":"Louisiana","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":5,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":5,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":5,"Overall_Score":4.2,"Verdict":"Strongly Landlord-Friendly"},
+{"State":"Maine","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":3,"Regulatory_Burdens":5,"Potential_Eviction_Costs":5,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":3,"Overall_Score":3.9,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Maryland","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":4,"Regulatory_Burdens":4,"Potential_Eviction_Costs":5,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":3,"Effective_Property_Tax_Rate":3,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":2,"Late_Fee_Rules":3,"Overall_Score":3.5,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Massachusetts","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":4,"Potential_Eviction_Costs":1,"Avg_Eviction_Rates_Timelines":2,"Required_Notice_Periods":3,"Effective_Property_Tax_Rate":2,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":2,"Late_Fee_Rules":2,"Overall_Score":3.0,"Verdict":"Balanced / Somewhat Tenant-Friendly"},
+{"State":"Michigan","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":1,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":5,"Overall_Score":3.9,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Minnesota","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":4,"Regulatory_Burdens":4,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":3,"Effective_Property_Tax_Rate":2,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":3,"Overall_Score":3.3,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Mississippi","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":5,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":5,"Overall_Score":4.2,"Verdict":"Landlord-Friendly"},
+{"State":"Missouri","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":3,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":5,"Overall_Score":4.0,"Verdict":"Landlord-Friendly"},
+{"State":"Montana","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":4,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":5,"Overall_Score":4.1,"Verdict":"Landlord-Friendly"},
+{"State":"Nebraska","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":1,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":5,"Overall_Score":3.7,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Nevada","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":3,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":5,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":3,"Overall_Score":3.7,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"New Hampshire","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":4,"Regulatory_Burdens":5,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":3,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":2,"Late_Fee_Rules":5,"Overall_Score":3.7,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"New Jersey","Formal_Landlord_Tenant_Act":2,"Rent_Control_Programs":1,"Regulatory_Burdens":2,"Potential_Eviction_Costs":2,"Avg_Eviction_Rates_Timelines":2,"Required_Notice_Periods":2,"Effective_Property_Tax_Rate":1,"Adverse_Possession_Requirements":3,"Security_Deposit_Rules":1,"Late_Fee_Rules":2,"Overall_Score":1.8,"Verdict":"Strongly Tenant-Friendly"},
+{"State":"New Mexico","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":5,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":3,"Overall_Score":4.1,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"New York","Formal_Landlord_Tenant_Act":2,"Rent_Control_Programs":2,"Regulatory_Burdens":4,"Potential_Eviction_Costs":2,"Avg_Eviction_Rates_Timelines":2,"Required_Notice_Periods":2,"Effective_Property_Tax_Rate":2,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":2,"Late_Fee_Rules":3,"Overall_Score":2.8,"Verdict":"Somewhat Tenant-Friendly"},
+{"State":"North Carolina","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":2,"Overall_Score":4.0,"Verdict":"Landlord-Friendly"},
+{"State":"North Dakota","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":5,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":5,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":5,"Overall_Score":4.6,"Verdict":"Strongly Landlord-Friendly"},
+{"State":"Ohio","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":2,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":5,"Overall_Score":3.8,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Oklahoma","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":5,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":3,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":5,"Overall_Score":4.2,"Verdict":"Strongly Landlord-Friendly"},
+{"State":"Oregon","Formal_Landlord_Tenant_Act":1,"Rent_Control_Programs":1,"Regulatory_Burdens":4,"Potential_Eviction_Costs":2,"Avg_Eviction_Rates_Timelines":2,"Required_Notice_Periods":3,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":3,"Security_Deposit_Rules":3,"Late_Fee_Rules":1,"Overall_Score":2.1,"Verdict":"Tenant-Friendly"},
+{"State":"Pennsylvania","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":2,"Required_Notice_Periods":3,"Effective_Property_Tax_Rate":2,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":3,"Overall_Score":3.5,"Verdict":"Balanced / Somewhat Tenant-Friendly"},
+{"State":"Rhode Island","Formal_Landlord_Tenant_Act":2,"Rent_Control_Programs":1,"Regulatory_Burdens":3,"Potential_Eviction_Costs":2,"Avg_Eviction_Rates_Timelines":2,"Required_Notice_Periods":3,"Effective_Property_Tax_Rate":3,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":3,"Overall_Score":2.9,"Verdict":"Somewhat Tenant-Friendly"},
+{"State":"South Carolina","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":5,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":5,"Overall_Score":4.3,"Verdict":"Strongly Landlord-Friendly"},
+{"State":"South Dakota","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":5,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":3,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":5,"Overall_Score":4.3,"Verdict":"Strongly Landlord-Friendly"},
+{"State":"Tennessee","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":5,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":3,"Overall_Score":3.9,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Texas","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":2,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":3,"Overall_Score":3.7,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Utah","Formal_Landlord_Tenant_Act":4,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":5,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":5,"Adverse_Possession_Requirements":3,"Security_Deposit_Rules":4,"Late_Fee_Rules":3,"Overall_Score":4.4,"Verdict":"Strongly Landlord-Friendly"},
+{"State":"Vermont","Formal_Landlord_Tenant_Act":2,"Rent_Control_Programs":1,"Regulatory_Burdens":3,"Potential_Eviction_Costs":2,"Avg_Eviction_Rates_Timelines":2,"Required_Notice_Periods":2,"Effective_Property_Tax_Rate":3,"Adverse_Possession_Requirements":3,"Security_Deposit_Rules":3,"Late_Fee_Rules":3,"Overall_Score":2.3,"Verdict":"Tenant-Friendly"},
+{"State":"Virginia","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":3,"Regulatory_Burdens":4,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":3,"Effective_Property_Tax_Rate":4,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":3,"Late_Fee_Rules":3,"Overall_Score":3.7,"Verdict":"Balanced / Somewhat Landlord-Friendly"},
+{"State":"Washington","Formal_Landlord_Tenant_Act":1,"Rent_Control_Programs":2,"Regulatory_Burdens":2,"Potential_Eviction_Costs":1,"Avg_Eviction_Rates_Timelines":1,"Required_Notice_Periods":1,"Effective_Property_Tax_Rate":3,"Adverse_Possession_Requirements":2,"Security_Deposit_Rules":2,"Late_Fee_Rules":2,"Overall_Score":1.9,"Verdict":"Strongly Tenant-Friendly"},
+{"State":"West Virginia","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":3,"Effective_Property_Tax_Rate":5,"Adverse_Possession_Requirements":3,"Security_Deposit_Rules":3,"Late_Fee_Rules":5,"Overall_Score":3.9,"Verdict":"Somewhat Landlord-Friendly"},
+{"State":"Wisconsin","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":3,"Potential_Eviction_Costs":3,"Avg_Eviction_Rates_Timelines":3,"Required_Notice_Periods":4,"Effective_Property_Tax_Rate":1,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":2,"Late_Fee_Rules":3,"Overall_Score":3.2,"Verdict":"Balanced / Somewhat Landlord-Friendly"},
+{"State":"Wyoming","Formal_Landlord_Tenant_Act":3,"Rent_Control_Programs":5,"Regulatory_Burdens":5,"Potential_Eviction_Costs":4,"Avg_Eviction_Rates_Timelines":4,"Required_Notice_Periods":5,"Effective_Property_Tax_Rate":5,"Adverse_Possession_Requirements":4,"Security_Deposit_Rules":4,"Late_Fee_Rules":5,"Overall_Score":4.5,"Verdict":"Strongly Landlord-Friendly"}
+];
+
+const FIPS_MAP = {"Alabama":"01","Alaska":"02","Arizona":"04","Arkansas":"05","California":"06","Colorado":"08","Connecticut":"09","Delaware":"10","Florida":"12","Georgia":"13","Hawaii":"15","Idaho":"16","Illinois":"17","Indiana":"18","Iowa":"19","Kansas":"20","Kentucky":"21","Louisiana":"22","Maine":"23","Maryland":"24","Massachusetts":"25","Michigan":"26","Minnesota":"27","Mississippi":"28","Missouri":"29","Montana":"30","Nebraska":"31","Nevada":"32","New Hampshire":"33","New Jersey":"34","New Mexico":"35","New York":"36","North Carolina":"37","North Dakota":"38","Ohio":"39","Oklahoma":"40","Oregon":"41","Pennsylvania":"42","Rhode Island":"44","South Carolina":"45","South Dakota":"46","Tennessee":"47","Texas":"48","Utah":"49","Vermont":"50","Virginia":"51","Washington":"53","West Virginia":"54","Wisconsin":"55","Wyoming":"56"};
+
+const FACTOR_LABELS = {
+  "Formal_Landlord_Tenant_Act": "Landlord-Tenant Act",
+  "Rent_Control_Programs": "Rent Control",
+  "Regulatory_Burdens": "Regulatory Burdens",
+  "Potential_Eviction_Costs": "Eviction Costs",
+  "Avg_Eviction_Rates_Timelines": "Eviction Timeline",
+  "Required_Notice_Periods": "Notice Periods",
+  "Effective_Property_Tax_Rate": "Property Tax Rate",
+  "Adverse_Possession_Requirements": "Adverse Possession",
+  "Security_Deposit_Rules": "Security Deposit",
+  "Late_Fee_Rules": "Late Fee Rules"
+};
+
+const FACTOR_LABELS_SHORT = {
+  "Formal_Landlord_Tenant_Act": "LT Act",
+  "Rent_Control_Programs": "Rent Control",
+  "Regulatory_Burdens": "Regulatory",
+  "Potential_Eviction_Costs": "Eviction Cost",
+  "Avg_Eviction_Rates_Timelines": "Eviction Timeline",
+  "Required_Notice_Periods": "Notice Period",
+  "Effective_Property_Tax_Rate": "Property Tax",
+  "Adverse_Possession_Requirements": "Adverse Possession",
+  "Security_Deposit_Rules": "Security Deposit",
+  "Late_Fee_Rules": "Late Fees"
+};
+
+const dataByState = {};
+DATA.forEach(d => { dataByState[d.State] = d; });
+
+function getColor(score) {
+  const stops = [
+    { val: 1.0, r: 3, g: 52, b: 89 },
+    { val: 2.0, r: 3, g: 113, b: 168 },
+    { val: 3.0, r: 3, g: 145, b: 216 },
+    { val: 4.0, r: 108, g: 213, b: 255 },
+    { val: 5.0, r: 227, g: 245, b: 255 }
+  ];
+  if (score <= stops[0].val) return `rgb(${stops[0].r},${stops[0].g},${stops[0].b})`;
+  if (score >= stops[stops.length-1].val) return `rgb(${stops[stops.length-1].r},${stops[stops.length-1].g},${stops[stops.length-1].b})`;
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (score >= stops[i].val && score <= stops[i+1].val) {
+      const t = (score - stops[i].val) / (stops[i+1].val - stops[i].val);
+      const r = Math.round(stops[i].r + t * (stops[i+1].r - stops[i].r));
+      const g = Math.round(stops[i].g + t * (stops[i+1].g - stops[i].g));
+      const b = Math.round(stops[i].b + t * (stops[i+1].b - stops[i].b));
+      return `rgb(${r},${g},${b})`;
+    }
+  }
+}
+
+function getTextColor(score) {
+  return score < 3.8 ? '#fff' : '#033459';
+}
+
+// Mobile modal
+function openModal(stateName) {
+  const sd = dataByState[stateName];
+  if (!sd) return;
+
+  document.getElementById('modal-state-name').textContent = sd.State;
+  const scoreEl = document.getElementById('modal-overall-score');
+  scoreEl.textContent = sd.Overall_Score;
+  scoreEl.style.color = getColor(sd.Overall_Score);
+
+  const verdictEl = document.getElementById('modal-verdict');
+  verdictEl.textContent = sd.Verdict;
+  verdictEl.style.background = getColor(sd.Overall_Score);
+  verdictEl.style.color = getTextColor(sd.Overall_Score);
+
+  const factorsEl = document.getElementById('modal-factors');
+  factorsEl.innerHTML = Object.entries(FACTOR_LABELS).map(([key, label]) =>
+    `<div class="modal-factor-row">
+      <span class="f-label">${label}</span>
+      <span class="f-value" style="background:${getColor(sd[key])};color:${getTextColor(sd[key])}">${sd[key]}</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('modal-cta').href = blogLink(sd.State);
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// State dropdown (mobile)
+const dropdown = document.getElementById('state-dropdown');
+const sortedStates = [...DATA].sort((a,b) => a.State.localeCompare(b.State));
+sortedStates.forEach(d => {
+  const opt = document.createElement('option');
+  opt.value = d.State;
+  opt.textContent = `${d.State} — ${d.Overall_Score} (${d.Verdict})`;
+  dropdown.appendChild(opt);
+});
+
+dropdown.addEventListener('change', function() {
+  if (this.value) openModal(this.value);
+  this.value = '';
+});
+
+// Render map
+const svg = d3.select("#map-svg");
+const projection = d3.geoAlbersUsa().scale(1280).translate([480, 300]);
+const path = d3.geoPath().projection(projection);
+
+d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us => {
+  const states = topojson.feature(us, us.objects.states).features;
+  const fipsToState = {};
+  Object.entries(FIPS_MAP).forEach(([name, fips]) => { fipsToState[fips] = name; });
+
+  svg.selectAll("path")
+    .data(states)
+    .enter()
+    .append("path")
+    .attr("d", path)
+    .attr("class", "state-path")
+    .attr("fill", d => {
+      const name = fipsToState[String(d.id).padStart(2, '0')];
+      const sd = dataByState[name];
+      return sd ? getColor(sd.Overall_Score) : '#ccc';
+    })
+    .attr("data-state", d => fipsToState[String(d.id).padStart(2, '0')] || '')
+    .on("mousemove", function(event, d) {
+      if (isTouchDevice) return;
+      const name = fipsToState[String(d.id).padStart(2, '0')];
+      const sd = dataByState[name];
+      if (!sd) return;
+      const tooltip = document.getElementById('tooltip');
+      let rows = Object.entries(FACTOR_LABELS_SHORT).map(([key, label]) =>
+        `<div class="score-row"><span class="label">${label}</span><span class="value">${sd[key]}</span></div>`
+      ).join('');
+      tooltip.innerHTML = `
+        <div class="state-name">${sd.State}</div>
+        <span class="verdict-badge" style="background:${getColor(sd.Overall_Score)};color:${getTextColor(sd.Overall_Score)}">${sd.Verdict}</span>
+        ${rows}
+        <div class="overall-score">${sd.Overall_Score}</div>
+        <span class="view-link">Click to view full breakdown →</span>
+      `;
+      tooltip.classList.add('visible');
+      let x = event.clientX + 16;
+      let y = event.clientY - 16;
+      if (x + 320 > window.innerWidth) x = event.clientX - 336;
+      if (y + 400 > window.innerHeight) y = window.innerHeight - 420;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+    })
+    .on("mouseleave", function() {
+      if (isTouchDevice) return;
+      document.getElementById('tooltip').classList.remove('visible');
+    })
+    .on("click", function(event, d) {
+      const name = fipsToState[String(d.id).padStart(2, '0')];
+      if (!name) return;
+      if (isTouchDevice) {
+        event.preventDefault();
+        openModal(name);
+      } else {
+        window.open(blogLink(name), '_blank');
+      }
+    });
+});
+
+// Top 5 lists
+const sorted = [...DATA].sort((a, b) => b.Overall_Score - a.Overall_Score);
+const topLandlord = sorted.slice(0, 5);
+const topTenant = sorted.slice(-5).reverse().sort((a,b) => a.Overall_Score - b.Overall_Score);
+
+function renderTopList(id, items, color) {
+  const ul = document.getElementById(id);
+  ul.innerHTML = items.map((d, i) => `
+    <li>
+      <span class="rank">${i + 1}.</span>
+      <span class="name"><a href="${blogLink(d.State)}" target="_blank">${d.State}</a></span>
+      <span class="score" style="color:${color}">${d.Overall_Score}</span>
+    </li>
+  `).join('');
+}
+
+renderTopList('top-landlord-list', topLandlord, '#0391D8');
+renderTopList('top-tenant-list', topTenant, '#033459');
+
+// Stats
+const scores = DATA.map(d => d.Overall_Score);
+const avg = (scores.reduce((a,b) => a+b, 0) / scores.length).toFixed(2);
+const sortedScores = [...scores].sort((a,b) => a-b);
+const median = sortedScores[25];
+document.getElementById('stats-list').innerHTML = `
+  <li><span class="name">States</span><span class="score" style="color:var(--navy)">50</span></li>
+  <li><span class="name">Mean Score</span><span class="score" style="color:var(--navy)">${avg}</span></li>
+  <li><span class="name">Median Score</span><span class="score" style="color:var(--navy)">${median}</span></li>
+  <li><span class="name">Score Range</span><span class="score" style="color:var(--navy)">${Math.min(...scores)} – ${Math.max(...scores)}</span></li>
+  <li><span class="name">Factors Scored</span><span class="score" style="color:var(--navy)">10</span></li>
+`;
+
+// Table
+let sortCol = 'Overall_Score';
+let sortDir = -1;
+
+function renderTable(data) {
+  const tbody = document.getElementById('table-body');
+  const allRanked = [...DATA].sort((a, b) => b.Overall_Score - a.Overall_Score);
+  const rankMap = {};
+  allRanked.forEach((d, i) => { rankMap[d.State] = i + 1; });
+  data.forEach(d => { d._rank = rankMap[d.State]; });
+
+  let display = [...data];
+  if (sortCol === 'rank') {
+    display.sort((a, b) => sortDir * (a._rank - b._rank));
+  } else if (sortCol === 'State' || sortCol === 'Verdict') {
+    display.sort((a, b) => sortDir * a[sortCol].localeCompare(b[sortCol]));
+  } else {
+    display.sort((a, b) => sortDir * (a[sortCol] - b[sortCol]));
+  }
+
+  const factors = ['Formal_Landlord_Tenant_Act','Rent_Control_Programs','Regulatory_Burdens','Potential_Eviction_Costs','Avg_Eviction_Rates_Timelines','Required_Notice_Periods','Effective_Property_Tax_Rate','Adverse_Possession_Requirements','Security_Deposit_Rules','Late_Fee_Rules'];
+
+  tbody.innerHTML = display.map(d => {
+    const factorCells = factors.map(f =>
+      `<td><span class="score-cell" style="background:${getColor(d[f])};color:${getTextColor(d[f])}">${d[f]}</span></td>`
+    ).join('');
+    return `<tr data-state="${d.State}">
+      <td style="font-weight:700;color:var(--text-light)">${d._rank}</td>
+      <td><a class="state-link" href="${blogLink(d.State)}" target="_blank">${d.State}</a></td>
+      <td><span class="score-cell" style="background:${getColor(d.Overall_Score)};color:${getTextColor(d.Overall_Score)};font-size:15px">${d.Overall_Score}</span></td>
+      <td><span class="verdict-cell" style="color:var(--navy)">${d.Verdict}</span></td>
+      ${factorCells}
+    </tr>`;
+  }).join('');
+
+  // Table row click: modal on touch, blog link on desktop
+  tbody.querySelectorAll('tr').forEach(tr => {
+    tr.addEventListener('click', function(e) {
+      if (e.target.tagName === 'A') return;
+      const name = this.dataset.state;
+      if (isTouchDevice) {
+        openModal(name);
+      } else {
+        window.open(blogLink(name), '_blank');
+      }
+    });
+  });
+}
+
+renderTable(DATA);
+
+// Sort headers
+document.querySelectorAll('#data-table th').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) {
+      sortDir *= -1;
+    } else {
+      sortCol = col;
+      sortDir = col === 'State' || col === 'Verdict' ? 1 : -1;
+    }
+    document.querySelectorAll('#data-table th').forEach(t => t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    th.querySelector('.sort-arrow').textContent = sortDir === 1 ? '▲' : '▼';
+    renderTable(DATA);
+  });
+});
+
+// Search filter
+document.getElementById('state-search').addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  const filtered = q ? DATA.filter(d => d.State.toLowerCase().includes(q)) : DATA;
+  renderTable(filtered);
+  document.querySelectorAll('#map-svg .state-path').forEach(el => {
+    const name = el.getAttribute('data-state');
+    el.style.opacity = !q || (name && name.toLowerCase().includes(q)) ? 1 : 0.15;
+  });
+});
+</script>
+</body>
+</html>
