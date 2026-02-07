@@ -1,5 +1,7 @@
 # 2026 Landlord vs. Tenant State Rankings — All 50 US States
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18512494.svg)](https://doi.org/10.5281/zenodo.18512494)
+
 Scored index ranking all 50 US states on how landlord-friendly or tenant-friendly 
 their laws are, across 10 legal and financial factors on a 1–5 scale.
 
