@@ -874,10 +874,19 @@ d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us => {
         <span class="view-link">Click to view full breakdown →</span>
       `;
       tooltip.classList.add('visible');
+      const tipRect = tooltip.getBoundingClientRect();
+      const tipW = tipRect.width || 320;
+      const tipH = tipRect.height || 450;
       let x = event.clientX + 16;
       let y = event.clientY - 16;
-      if (x + 320 > window.innerWidth) x = event.clientX - 336;
-      if (y + 400 > window.innerHeight) y = window.innerHeight - 420;
+      // Flip left if overflowing right
+      if (x + tipW > window.innerWidth - 8) x = event.clientX - tipW - 16;
+      // Flip above cursor if overflowing bottom
+      if (y + tipH > window.innerHeight - 8) y = event.clientY - tipH - 8;
+      // Clamp to top of viewport
+      if (y < 8) y = 8;
+      // Clamp to left
+      if (x < 8) x = 8;
       tooltip.style.left = x + 'px';
       tooltip.style.top = y + 'px';
     })
