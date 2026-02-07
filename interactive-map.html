@@ -465,11 +465,13 @@
     background: var(--card-bg);
     border-radius: 16px;
     box-shadow: 0 2px 20px rgba(3,52,89,0.08);
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .table-wrapper table {
     width: 100%;
+    min-width: 1100px;
     border-collapse: collapse;
     font-size: 13px;
   }
